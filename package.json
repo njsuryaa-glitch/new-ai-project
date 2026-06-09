@@ -1,0 +1,28 @@
+{
+  "name": "ai-knowledge-assistant",
+  "version": "1.0.0",
+  "description": "Production-grade AI Knowledge Assistant with FastAPI backend and HTML5/Vanilla CSS/JS frontend",
+  "main": "run-backend.js",
+  "scripts": {
+    "start": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "backend": "node run-backend.js",
+    "frontend": "vite frontend --port 3000 --open",
+    "build": "vite build frontend"
+  },
+  "keywords": [
+    "rag",
+    "fastapi",
+    "openai",
+    "pgvector",
+    "vite",
+    "vanilla-js"
+  ],
+  "author": "Antigravity",
+  "license": "MIT",
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "devDependencies": {
+    "vite": "^5.2.11"
+  }
+}

@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.manifest
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment files — NEVER commit secrets
+.env
+.env.local
+.env.production
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+*.xml
+nosetests.xml
+coverage.xml
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# macOS
+.DS_Store
+
+# Docker volumes
+postgres_data/
+
+# Node
+node_modules/
+
+# Build output
+dist/
+
+# Logs
+*.log
