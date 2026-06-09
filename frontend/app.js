@@ -9,13 +9,48 @@ const state = {
   healthInterval: null
 };
 
-// Compute API base path dynamically
+// Detect if running locally (localhost or 127.0.0.1)
+function isLocalEnv() {
+  return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+}
+
+// Compute API base path dynamically — returns null if no backend configured on remote deployment
 function getApiUrl(endpoint) {
-  const host = state.apiHost || (window.location.port && window.location.port !== '8000' ? 'http://localhost:8000' : window.location.origin);
-  // Ensure no trailing slash on host, and leading slash on endpoint
+  let host = state.apiHost;
+  if (!host) {
+    if (isLocalEnv()) {
+      // Local dev: use same origin if on port 8000, else default to backend port
+      host = window.location.port && window.location.port !== '8000'
+        ? 'http://localhost:8000'
+        : window.location.origin;
+    } else {
+      // Deployed (Vercel, etc.) with no backend URL configured — cannot make API calls
+      return null;
+    }
+  }
   const formattedHost = host.replace(/\/$/, '');
   const formattedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   return `${formattedHost}${formattedEndpoint}`;
+}
+
+// Show a one-time banner when deployed without an API host configured
+function showNoBannerConfigured() {
+  if (document.getElementById('no-backend-banner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'no-backend-banner';
+  banner.style.cssText = `
+    position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+    background: linear-gradient(90deg, #6366f1, #a855f7);
+    color: white; padding: 12px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: Inter, sans-serif; font-size: 14px; font-weight: 500;
+    box-shadow: 0 2px 12px rgba(99,102,241,0.4);
+  `;
+  banner.innerHTML = `
+    <span>⚙️ <strong>Backend not configured.</strong> This app needs a backend API URL to work. Open Settings and enter your deployed API URL.</span>
+    <button onclick="openSettings()" style="background:white;color:#6366f1;border:none;padding:6px 14px;border-radius:6px;font-weight:600;cursor:pointer;margin-left:16px;">Open Settings</button>
+  `;
+  document.body.prepend(banner);
 }
 
 // Request headers generator
@@ -118,11 +153,22 @@ function formatBytes(bytes, decimals = 1) {
 // ==========================================================================
 
 async function checkHealth() {
+  const url = getApiUrl('/health');
+  if (!url) {
+    showNoBannerConfigured();
+    updateBadge(dom.dbBadge, dom.dbStatus, 'dot-red', 'dot-green', 'dot-yellow', 'No API');
+    updateBadge(dom.llmBadge, dom.llmStatus, 'dot-red', 'dot-green', 'dot-yellow', 'No API');
+    return;
+  }
   try {
-    const res = await fetch(getApiUrl('/health'));
+    const res = await fetch(url);
     if (!res.ok) throw new Error('Unhealthy status code');
     
     const data = await res.json();
+    
+    // Hide banner if it was showing
+    const banner = document.getElementById('no-backend-banner');
+    if (banner) banner.remove();
     
     // Update DB Badge
     if (data.database === 'connected') {
@@ -156,8 +202,14 @@ function updateBadge(badgeEl, textEl, addClass, removeClass1, removeClass2, text
 // ==========================================================================
 
 async function fetchDocuments() {
+  const url = getApiUrl('/documents');
+  if (!url) {
+    showNoBannerConfigured();
+    renderEmptyState();
+    return;
+  }
   try {
-    const response = await fetch(getApiUrl('/documents'), {
+    const response = await fetch(url, {
       headers: getHeaders()
     });
     
@@ -261,8 +313,15 @@ function uploadFiles(files) {
   dom.progressPercent.textContent = '0%';
   dom.progressBar.style.width = '0%';
   
+  const uploadUrl = getApiUrl('/documents/upload');
+  if (!uploadUrl) {
+    showNoBannerConfigured();
+    showToast('No backend API configured. Open Settings and enter your API URL.', 'error');
+    dom.progressContainer.style.display = 'none';
+    return;
+  }
   const xhr = new XMLHttpRequest();
-  xhr.open('POST', getApiUrl('/documents/upload'));
+  xhr.open('POST', uploadUrl);
   
   // Headers
   xhr.setRequestHeader('X-API-Key', state.apiKey);

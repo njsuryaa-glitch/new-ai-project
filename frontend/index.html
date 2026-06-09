@@ -168,9 +168,9 @@
       </div>
       <div class="modal-body">
         <div class="form-group">
-          <label for="api-host-input">API Base URL</label>
-          <input type="text" id="api-host-input" placeholder="e.g. http://localhost:8000" value="">
-          <small class="form-hint">Leave blank to use the same host the app is running on.</small>
+          <label for="api-host-input">API Base URL <span style="color:#f87171;font-weight:600;">*Required on deployed apps</span></label>
+          <input type="text" id="api-host-input" placeholder="e.g. https://your-backend.onrender.com" value="">
+          <small class="form-hint">⚠️ On Vercel/deployed apps, paste your backend URL here (e.g. Render, Railway). Leave blank only for local use.</small>
         </div>
         <div class="form-group">
           <label for="api-key-input">API Secret Key (X-API-Key)</label>
